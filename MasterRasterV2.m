@@ -1,9 +1,9 @@
 %% CONNECT TO STAGE (may have to change serial port name)
-
- %   if ~isempty(instrfind)
- %    fclose(instrfind);
- %     delete(instrfind);
-%end
+addpath('Stage Control')
+    if ~isempty(instrfind)
+     fclose(instrfind);
+      delete(instrfind);
+end
 
 % Specify serial port
 portName = 'COM5';
@@ -92,7 +92,7 @@ end
 
 raster_x_size = 5 ; % mm
 raster_y_size = 5 ; % mm
-step_size = 1 * 20000 ; % mm * scale
+step_size = 0.5 * 20000 ; % mm * scale
 
 raster_x = (home_pos(1) - 0.5*(raster_x_size*20000)) : step_size : (home_pos(1) + 0.5*(raster_x_size*20000)) ;
 raster_y = (home_pos(2) - 0.5*(raster_y_size*20000)) : step_size : (home_pos(2) + 0.5*(raster_y_size*20000)) ;

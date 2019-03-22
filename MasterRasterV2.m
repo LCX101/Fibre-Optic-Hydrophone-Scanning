@@ -90,16 +90,24 @@ end
 
 %% DEFINE RASTER POINTS/AREA
 
-raster_x_size = 5 ; % mm
-raster_y_size = 5 ; % mm
+raster_x_size = 10 ; % mm
+raster_y_size = 10 ; % mm
 step_size = 0.5 * 20000 ; % mm * scale
+pause_time = 0.05;  %sec AF default = 0.05
 
 raster_x = (home_pos(1) - 0.5*(raster_x_size*20000)) : step_size : (home_pos(1) + 0.5*(raster_x_size*20000)) ;
 raster_y = (home_pos(2) - 0.5*(raster_y_size*20000)) : step_size : (home_pos(2) + 0.5*(raster_y_size*20000)) ;
 
-%% RASTER SCAN AND MEASURE WITH HYDROPHONE
+N_samples=length(raster_x)*length(raster_y);
+%Scan_time=N_samples*(pause_time*2+10e-3+ scp.RecordLength/scp.SampleFrequency); %Approximate scan time
+Scan_time = N_samples*(pause_time*2 + 0.31);    %Very approximate
 
-targetFreq = 2e6;
+display(strcat('Rasters Defined, Scan time =',num2str(Scan_time,3),'s'));
+
+%% RASTER SCAN AND MEASURE WITH HYDROPHONE
+display('Scan Beginning');
+tic;
+targetFreq = 165e3;
 pause('on')
 hydrophonePeaks = zeros(length(raster_x),length(raster_y)) ;
 sigGenPeaks = zeros(length(raster_x),length(raster_y)) ;
@@ -116,14 +124,14 @@ for ii = 1 : numel(raster_x)
       
         AF_moveToPos(s, raster_x(ii), raster_yROW(jj))
         
-        pause(0.05) % can tweak these to spped up or slow down scan
+        pause(pause_time) % can tweak these to spped up or slow down scan
         
         [scp, arData, darRangeMin, darRangeMax] = AF_takeMeasOscilloscope( scp ) ;
         
         [hydrophonePeaks(ii,jj), sigGenPeaks(ii,jj), freqPeaks(ii,jj)] = inlinefft(arData,scp.SampleFrequency,scp.RecordLength, targetFreq);
         %hydrophonePeaks(ii,jj), sigGenPeaks(ii,jj), freqPeaks(ii,jj), phsDiff(ii,jj)] = inlinefftphase(arData,scp.SampleFrequency,scp.RecordLength);
 
-        pause(0.05)
+        pause(pause_time)
         
     end
 end
@@ -131,23 +139,28 @@ end
 hydrophonePeaks(2:2:end,:) = fliplr(hydrophonePeaks((2:2:end),:));
 sigGenPeaks(2:2:end,:) = fliplr(sigGenPeaks((2:2:end),:));
 freqPeaks(2:2:end,:) = fliplr(freqPeaks((2:2:end),:));
-
+toc
 save('FOH_2019_demo.mat','hydrophonePeaks','sigGenPeaks','freqPeaks') 
+display('Scan Complete')
 %% QUICK PLOT OF SCAN
 
-figure(513)
+figure(1)
 pcolor(hydrophonePeaks)
 shading flat
 daspect([1 1 1])
+title('Hydrophone')
 
-figure(502)
+figure(2)
 pcolor(sigGenPeaks)
 shading flat
 daspect([1 1 1])
+title('Signal In')
 
-figure(503)
-pcolor(freqPeaks)
-shading flat
-daspect([1 1 1])
+[mean_ratio]=LC_Freq_sweep_1(targetFreq,hydrophonePeaks,sigGenPeaks);
+
+% figure(503)
+% pcolor(freqPeaks)
+% shading flat
+% daspect([1 1 1])
 
  

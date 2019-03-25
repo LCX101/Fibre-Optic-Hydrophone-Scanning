@@ -156,7 +156,9 @@ shading flat
 daspect([1 1 1])
 title('Signal In')
 
-[mean_ratio]=LC_Freq_sweep_1(targetFreq,hydrophonePeaks,sigGenPeaks);
+addendum='_T3';
+
+[mean_ratio]=LC_Freq_sweep_1(targetFreq,hydrophonePeaks,sigGenPeaks,addendum);
 
 % figure(503)
 % pcolor(freqPeaks)
